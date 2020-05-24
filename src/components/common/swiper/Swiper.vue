@@ -221,17 +221,17 @@
 
   .indicator {
     display: flex;
-    justify-content: center;
+    justify-content: center;/*令弹性盒内的该元素位于容器中心 */
     position: absolute;
     width: 100%;
     bottom: 8px;
   }
 
   .indi-item {
-    box-sizing: border-box;
+    box-sizing: border-box;/*规定该元素为并排摆放的带边框的框 */
     width: 8px;
     height: 8px;
-    border-radius: 4px;
+    border-radius: 4px;/*设置为圆角边框 */
     background-color: #fff;
     line-height: 8px;
     text-align: center;

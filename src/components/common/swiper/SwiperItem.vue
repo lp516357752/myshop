@@ -13,7 +13,7 @@
 <style scoped>
   .slide {
     width: 100%;
-    flex-shrink: 0;
+    flex-shrink: 0;/*不让元素自动收缩 */
   }
 
   .slide img {
