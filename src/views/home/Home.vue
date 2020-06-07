@@ -2,7 +2,12 @@
   <div id="home">
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
     
-    <scroll class="content" ref="homeScroll" :probe-type="3" @scroll="contentScroll">
+    <scroll class="content" ref="homeScroll" 
+    :probe-type="3"
+    :pull-up-load="true" 
+    @scroll="contentScroll"
+    @pullingUp="loadMoreDatas"
+    >
       <home-swiper :banners="banners"/>
       <home-reconmends :recommends="recommends"></home-reconmends>
       <features></features>
@@ -28,6 +33,7 @@ import BackTop from 'components/content/backTop/BackTop'
 import {getHomeMultidata,
         getHomeGoods,
         getHomePicSwiper} from 'network/home'//网络请求模块
+import throttle from 'common/tools/throttle'
 
 export default {
   name:"Home",
@@ -59,11 +65,19 @@ export default {
   },
   created() {
     this.getHomeMultidata();
-    this.getHomeGoods();
     this.getHomePicSwiper();
+
+    this.getHomeGoods('pop');
+    this.getHomeGoods('news');
+    this.getHomeGoods('sell');
+
   },
   mounted() {
-
+    //监听图片加载完毕
+    const refresh = throttle(this.$refs.homeScroll.refresh, 500);//返回了方法，可传入参数
+    this.$bus.$on('imageLoaded', () => {
+      refresh()
+    })
   },
 
   methods: {
@@ -89,8 +103,9 @@ export default {
     contentScroll(position) {
       this.ifBackTopShow = -position.y>500? true:false;
     },
-
-
+    loadMoreDatas() {
+      this.getHomeGoods(this.currentType)
+    },
     /*
     网络请求方法
      */
@@ -101,17 +116,14 @@ export default {
         this.recommends = res.data.recommend.list;
       })
     },
-    getHomeGoods() {
-      const page = this.goods['pop'].page+1;
+    getHomeGoods(type) {
+      const page = this.goods[type].page+1;
       getHomeGoods(page).then(res => {
-        this.goods['pop'].list.push(...res);        
-        res.sort(function(){ return 0.5 - Math.random() })        
-        this.goods['sell'].list.push(...res);
         res.sort(function(){ return 0.5 - Math.random() })
-        this.goods['news'].list.push(...res);
-        this.goods['news'].page++;
-        this.goods['sell'].page++;
-        this.goods['pop'].page++;
+        this.goods[type].list.push(...res); 
+        this.goods[type].page++;
+
+        this.$refs.homeScroll.finishPullUp()
     })
     },
     getHomePicSwiper() {
@@ -119,8 +131,8 @@ export default {
         this.results = res;
         this.banners = res.data;
       })
-    }
-     
+    },
+    
   },
   computed: {
 
